@@ -1,13 +1,20 @@
 package facades;
 
+import dtos.EmployeeDTO;
 import dtos.RenameMeDTO;
+import dtos.UserDTO;
+import entities.Employee;
 import entities.RenameMe;
+
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 //import errorhandling.RenameMeNotFoundException;
+import entities.User;
 import utils.EMF_Creator;
 
 /**
@@ -40,18 +47,32 @@ public class FacadeExample {
         return emf.createEntityManager();
     }
     
-    public RenameMeDTO create(RenameMeDTO rm){
-        RenameMe rme = new RenameMe(rm.getDummyStr1(), rm.getDummyStr2());
+    public UserDTO create(UserDTO userDTO){
+        User user = new User(userDTO.getUsername(), userDTO.getPassword());
         EntityManager em = getEntityManager();
         try {
             em.getTransaction().begin();
-            em.persist(rme);
+            em.persist(user);
             em.getTransaction().commit();
         } finally {
             em.close();
         }
-        return new RenameMeDTO(rme);
+        return new UserDTO(user);
     }
+    public EmployeeDTO create(EmployeeDTO employeeDTO){
+        Employee employee = new Employee(employeeDTO.getName(), employeeDTO.getAddress(), employeeDTO.getSalary());
+        EntityManager em = getEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.persist(employee);
+            em.getTransaction().commit();
+        } finally {
+            em.close();
+        }
+        return new EmployeeDTO(employee);
+    }
+
+
     public RenameMeDTO getById(long id) { //throws RenameMeNotFoundException {
         EntityManager em = emf.createEntityManager();
         RenameMe rm = em.find(RenameMe.class, id);
@@ -59,6 +80,46 @@ public class FacadeExample {
 //            throw new RenameMeNotFoundException("The RenameMe entity with ID: "+id+" Was not found");
         return new RenameMeDTO(rm);
     }
+
+    public Employee getEmployeeById(Integer id) {
+        EntityManager em = emf.createEntityManager();
+        Employee employee = em.find(Employee.class, id);
+        return employee;
+    }
+    public Employee getEmployeeByName(String name) {
+        EntityManager em = emf.createEntityManager();
+        Employee employee = em.find(Employee.class, name);
+        return employee;
+    }
+    public List<Employee> getAllEmployees() {
+        EntityManager em = emf.createEntityManager();
+        Query q = em.createQuery("select e from Employee e");
+        List<Employee> employeeList = new ArrayList<>();
+        employeeList = q.getResultList();
+        return employeeList;
+    }
+
+    public List<Employee> getEmployeesWithHighestSalary() {
+        EntityManager em = emf.createEntityManager();
+        Query q = em.createQuery("select e.salary from Employee e ORDER BY e.salary DESC");
+        List<Employee> employeeList = new ArrayList<>();
+        employeeList = q.getResultList();
+        return employeeList;
+
+    }
+
+    public void createEmployee(Employee employee) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.persist(employee);
+            em.getTransaction().commit();
+        } finally {
+            em.close();
+        }
+
+    }
+
     
     //TODO Remove/Change this before use
     public long getRenameMeCount(){
